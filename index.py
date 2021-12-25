@@ -7,8 +7,6 @@ import push
 Account = os.environ['Account'].split(',')  # 账号
 Password = os.environ['Password'].split(',')  # 登录密码
 
-# Account = ''.split(',')
-# Password = ''.split(',')
 
 login_url = 'https://web.everphoto.cn/api/auth'  # 时光相册登录地址
 checkin_url = 'https://api.everphoto.cn/users/self/checkin/v2'  # 时光相册签到地址
@@ -85,11 +83,6 @@ def start():
         Secret = os.environ['Secret']  # 应用密钥
         EnterpriseID = os.environ['EnterpriseID']  # 企业 ID
         Touser = os.getenv('Touser', '@all')  # 用户 ID
-        # 测试使用(可删)
-        # AgentId = ''  # 应用 ID
-        # Secret = ''  # 应用密钥
-        # EnterpriseID = ''  # 企业 ID
-        # Touser = '@all'  # 用户 ID
 
         for item in detail.values():
             content = '今日签到奖励：%sM\n明日签到奖励：%sM\n总共获得空间：%sM\n连续签到：%s天\n注册时长：%s\n文件数：共%s张相片/视频' % (
@@ -126,4 +119,3 @@ def main(*arg):
 
 if __name__ == '__main__':
     main()
-    # start()
