@@ -17,7 +17,7 @@ def main(*arg):
             msg_list.extend(res)
 
         if type:
-            push(type, "微博", msg_list)
+            push(type, "时光相册", msg_list)
         else:  # 不开启服务
             print("未开启推送")
     else:  # 单独推送
@@ -28,7 +28,7 @@ def main(*arg):
             alone_type = i.get("push")  # 单独推送类型
 
             if alone_type:
-                push(alone_type, "微博", res)
+                push(alone_type, "时光相册", res)
             else:
                 print("未开启推送")
 
