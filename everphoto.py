@@ -1,16 +1,13 @@
 import hashlib
 import requests as req
+from datetime import datetime
 
 
 def handler(fn):
-    """
-    将结果整理成字典
-    """
-
     def inner(*args, **kwargs):
         res = fn(*args, **kwargs)
 
-        if res["status"]:
+        if res["status"]: 
             return [
                 {
                     "h4": {
@@ -24,49 +21,59 @@ def handler(fn):
                 },
                 {
                     "txt": {
-                        "content": res["msg"],
+                        "content": res["message"],
                     },
                     "table": {
                         "content": [
                             ("描述", "内容"),
-                            ("今日获得", f"{res['rwd']}M"),
+                            ("今日获得", f"{res['reward']}M"),
                             ("明日获得", f"{res['tomorrow']}M"),
                             ("总共获得", f"{res['total']}M"),
                             ("连续签到", f"{res['continuity']}天"),
-                            ("已注册", f"{res['created']}天"),
-                            ("文件数", res["file_num"]),
+                            ("注册时间", f"{res['created']}"),
+                            ("注册天数", f"{res['day']}天"),
                         ]
                     },
                 },
             ]
         else:
+            # 登录失败 or 签到失败
             return [
                 {
                     "h4": {
                         "content": f"账号: {res['account']}",
                     },
                     "txt": {
-                        "content": res["msg"],
+                        "content": res["message"],
                     },
                 }
             ]
 
     return inner
 
+# 日期字符串格式化
+def dateTime_format(dt: str) -> str:
+    try:
+        dl = datetime.strptime(dt, "%Y-%m-%dT%H:%M:%S+08:00")
+
+        return dl.strftime("%Y-%m-%d %H:%M:%S")
+    except ValueError as e:
+        print(f"格式化日期时出错, 原因: {e}")
 
 class Everphoto:
     # 登录地址
     LOGIN_URL = "https://web.everphoto.cn/api/auth"
     # 签到地址
-    CHECKIN_URL = "https://api.everphoto.cn/users/self/checkin/v2"
+    CHECKIN_URL = "https://openapi.everphoto.cn/sf/3/v4/PostCheckIn"
 
     def __init__(self, account: str, password: str) -> None:
         self.__account = account
         self.__password = password
         self.headers = {
-            "User-Agent": "EverPhoto/2.7.0 (Android;2702;ONEPLUS A6000;28;oppo)",
+            "user-agent": "EverPhoto/4.5.0 (Android;4050002;MuMu;23;dev)",
             "application": "tc.everphoto",
         }
+        self.userInfo = {}
 
     # 获取 md5 加密后的密码
     def get_pwd_md5(self) -> str:
@@ -89,70 +96,97 @@ class Everphoto:
             ).json()
 
             if res.get("code") == 0:
-                print(f"登录账号 {self.__account} 成功...")
-                return res.get("data")
+                print(f"🎉 登录账号 {self.__account} 成功")
+                
+                data = res.get("data")
+
+                self.headers.update({"authorization": f"Bearer {data['token']}"})
+                self.userInfo.update({
+                    "account": self.__account, # 账号
+                    "name": data["user_profile"]["name"], # 用户名
+                    "vip": data["user_profile"].get("vip_level"), # vip等级
+                    "created": dateTime_format(data["user_profile"]["created_at"]), # 创建时间
+                    "day": data["user_profile"]["days_from_created"], # 注册时长
+                })
+                return {
+                    "status": True
+                }
             else:
-                print(f"登录账号 {self.__account} 失败...")
-        except Exception as ex:
-            print(f"登录账号 {self.__account} 时出现错误...., 原因: {ex}")
+                raise Exception(res.get("message"))
+        except Exception as e:
+            print(f"😭 登录账号 {self.__account} 时出现错误, 原因: {e}")
+
+            return {
+                "status": False,
+                "message": e,
+            }
 
     # 签到
     def checkin(self):
         try:
+            headers = {
+                "content-type": "application/json",
+                "host": "openapi.everphoto.cn",
+                "connection": "Keep-Alive",
+            }
+
+            headers.update(self.headers)
+            
             res = req.post(
                 Everphoto.CHECKIN_URL,
-                headers=self.headers,
+                headers=headers,
             ).json()
 
-            if res.get("code") == 0:
-                print(f"账号 {self.__account} 签到完成...")
-                return res.get("data")
-            else:
-                print(f"账号 {self.__account} 签到失败...")
-        except Exception as ex:
-            print(f"账号 {self.__account} 签到时出现错误, 原因: {ex}")
+            code = res.get('code')
 
-    @handler
-    def start(self):
-        # 开始登陆
-        login_res = self.login()
-        if login_res is not None:
-            profile = login_res.get("user_profile")
-            self.headers.update({"authorization": f"Bearer {login_res.get('token')}"})
+            if code == 0:
+                print(f"🎉 账号 {self.__account} 签到成功")
 
-            # 开始签到
-            data = self.checkin()
-
-            if data is not None:
+                data = res.get('data')
 
                 if data.get("checkin_result") is True:
                     rwd = data["reward"] / (1024 * 1024)  # 今日获得
                     msg = "签到成功"
                 else:
                     rwd = 0
-                    msg = "已签到"
+                    msg = "今日签到"
 
                 return {
                     "status": True,
-                    "msg": msg,
-                    "account": self.__account,  # 账号
-                    "name": profile.get("name"),  # 用户名
-                    "created": profile["days_from_created"],  # 注册天数
-                    "file_num": profile["estimated_media_num"],  # 文件数
-                    "tomorrow": data["tomorrow_reward"] / (1024 * 1024),  # 明日获得
-                    "total": data["total_reward"] / (1024 * 1024),  # 总获得空间
-                    "continuity": data["continuity"],  # 连续签到天数
-                    "rwd": rwd,  # 今日获得
+                    "reward": rwd,
+                    "message": msg,
+                    "continuity": data.get("continuity"), # 连续签到天数
+                    "total": data.get("total_reward") / (1024 * 1024), # 总计获得
+                    "tomorrow": data.get("tomorrow_reward") / (1024 * 1024), # 明日可获得
                 }
-            else:
-                return {
-                    "status": False,
-                    "msg": "签到失败",
-                    "account": self.__account,
-                }
+            elif code == 20104:
+                # 未登录
+                raise Exception(res.get('message'))
+            elif code == 30001:
+                # 服务器内部错误?
+                raise Exception(res.get('message'))
+        except Exception as e:
+            print(f"账号 {self.__account} 签到时出现错误, 原因: {e}")
+
+            return {
+                "status": False,
+                "message": f"签到失败, 原因: {e}",
+            }
+
+    @handler
+    def start(self):
+        r = self.login()
+        if r["status"]:
+            res = self.checkin()
+            
+            result = {}
+            result.update(self.userInfo)
+            result.update(res)
+
+            return result
         else:
             return {
                 "status": False,
-                "msg": "登录失败",
+                "message": f"登录失败, 原因: {r['message']}",
                 "account": self.__account,
             }
