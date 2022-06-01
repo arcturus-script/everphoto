@@ -149,7 +149,7 @@ class Everphoto:
                     msg = "签到成功"
                 else:
                     rwd = 0
-                    msg = "今日签到"
+                    msg = "今日已签到"
 
                 return {
                     "status": True,
