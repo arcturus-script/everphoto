@@ -2,6 +2,7 @@ config = {
     "multi": [
         {
             "account": "123",
+            "country": "+86", # 区号
             "password": "123",
             "push": "pushplus", # together 为 True 时失效, 不写不推送
         },

@@ -11,7 +11,8 @@ def main(*arg):
     if together is None or together:  # 如果需要一并推送
         msg_list = []
         for i in multi:
-            b = Everphoto(i["account"], i['password'])
+            country = i.get("country", "+86")
+            b = Everphoto(i["account"], i['password'], country)
             res = b.start()
 
             msg_list.extend(res)
@@ -22,7 +23,8 @@ def main(*arg):
             print("未开启推送")
     else:  # 单独推送
         for i in multi:
-            b = Everphoto(i["account"], i['password'])
+            country = i.get("country", "+86")
+            b = Everphoto(i["account"], i['password'], country)
             res = b.start()
 
             alone_type = i.get("push")  # 单独推送类型

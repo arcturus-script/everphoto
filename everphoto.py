@@ -66,7 +66,7 @@ class Everphoto:
     # 签到地址
     CHECKIN_URL = "https://openapi.everphoto.cn/sf/3/v4/PostCheckIn"
 
-    def __init__(self, account: str, password: str) -> None:
+    def __init__(self, account: str, password: str, country_code: str = "+86") -> None:
         self.__account = account
         self.__password = password
         self.headers = {
@@ -74,6 +74,7 @@ class Everphoto:
             "application": "tc.everphoto",
         }
         self.userInfo = {}
+        self.country_code = country_code
 
     # 获取 md5 加密后的密码
     def get_pwd_md5(self) -> str:
@@ -83,10 +84,10 @@ class Everphoto:
         return md5.hexdigest()
 
     # 登陆
-    def login(self, country_code: str = "+86"):
+    def login(self):
         try:
             data = {
-                "mobile": f"{country_code}{self.__account}",
+                "mobile": f"{self.country_code}{self.__account}",
                 "password": self.get_pwd_md5(),
             }
             res = req.post(
