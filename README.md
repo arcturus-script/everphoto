@@ -15,6 +15,8 @@
 
 #### 获取某张图片的 MD5 值
 
+点击备注, 然后找这个请求
+
 [![j3E6tH.png](https://s1.ax1x.com/2022/07/02/j3E6tH.png)](https://imgtu.com/i/j3E6tH)
 
 
