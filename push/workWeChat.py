@@ -1,5 +1,6 @@
 import requests as re
 
+
 class workWechatApp:
     """
     企业微信推送
@@ -88,7 +89,12 @@ class workWechatRobot:
     def __init__(self, key: str) -> None:
         self.key = key
 
-    def push_msg(self, content: str, title: str, msgtype: str = "text") -> None:
+    def push_msg(
+        self,
+        content: str,
+        title: str,
+        msgtype: str = "text",
+    ) -> None:
         """
         Parameters:
             msgtype: markdown and text

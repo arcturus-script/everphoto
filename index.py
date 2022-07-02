@@ -12,8 +12,10 @@ def main(*arg):
         msg_list = []
         for i in multi:
             country = i.get("country", "+86")
-            b = Everphoto(i["account"], i['password'], country)
-            res = b.start()
+            daily_task = i.get("daily_task")
+            b = Everphoto(i["account"], i["password"], country)
+
+            res = b.start(daily_task)
 
             msg_list.extend(res)
 
@@ -24,8 +26,10 @@ def main(*arg):
     else:  # 单独推送
         for i in multi:
             country = i.get("country", "+86")
-            b = Everphoto(i["account"], i['password'], country)
-            res = b.start()
+            daily_task = i.get("daily_task")
+            b = Everphoto(i["account"], i["password"], country)
+
+            res = b.start(daily_task)
 
             alone_type = i.get("push")  # 单独推送类型
 
@@ -33,6 +37,7 @@ def main(*arg):
                 push(alone_type, "时光相册", res)
             else:
                 print("未开启推送")
+
 
 if __name__ == "__main__":
     main()

@@ -50,11 +50,11 @@ def push(type: str, title: str, content):
         elif type == "workWechat":
             try:
                 print(dict2text.dict2text(content))
-                
+
                 agentid = os.environ["agentid"]
                 corpSecret = os.environ["corpSecret"]
                 corid = os.environ["corpid"]
-                
+
                 # 这里推送 text(当然也可以推送 markdown, 但是微信不支持)
                 res = workWechatApp(agentid, corpSecret, corid).push_msg(
                     title=title,

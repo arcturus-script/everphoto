@@ -216,7 +216,7 @@ class dict2md:
             |1|A|
             |2|B|
         """
-        content = ["\n"] # 这里在表格前面多加一个换行, 解决 pushplus 排版问题
+        content = ["\n"]  # 这里在表格前面多加一个换行, 解决 pushplus 排版问题
 
         # 表头
         for i in list_[0]:

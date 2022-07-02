@@ -8,3 +8,37 @@
 ### 步骤
 
 查看[这里](https://github.com/ICE99125/BiliBili_Checkin.git)
+
+### 每日任务
+
+需要抓包....可以使用 Nox + fidder 来抓
+
+#### 获取某张图片的 MD5 值
+
+[![j3E6tH.png](https://s1.ax1x.com/2022/07/02/j3E6tH.png)](https://imgtu.com/i/j3E6tH)
+
+
+#### 获取 asset_ids
+
+
+这里不要直接复制它的值
+
+
+[![j3Echd.png](https://s1.ax1x.com/2022/07/02/j3Echd.png)](https://imgtu.com/i/j3Echd)
+
+
+先保存一下
+
+
+[![j3EyAe.png](https://s1.ax1x.com/2022/07/02/j3EyAe.png)](https://imgtu.com/i/j3EyAe)
+
+
+[![j3Er7D.png](https://s1.ax1x.com/2022/07/02/j3Er7D.png)](https://imgtu.com/i/j3Er7D)
+
+
+#### 获取 tag_id
+
+先把一张相片移入相册, 然后还是找 /v4/PostSyncC.... 的请求
+
+里面的 tag_id 就是相册的 id
+

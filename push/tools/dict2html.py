@@ -492,7 +492,9 @@ class dict2html:
             if thStyle:
                 tb.append(f"style='{thStyle}'")
             else:
-                tb.append("style='text-align: center;border: 1px solid #e6e6e6;background-color: #F5F5F5;'")
+                tb.append(
+                    "style='text-align: center;border: 1px solid #e6e6e6;background-color: #F5F5F5;'"
+                )
 
             tb.append(f">{i}</th>")
 
@@ -508,7 +510,7 @@ class dict2html:
                     tb.append(f"style='{tdStyle}'")
                 else:
                     tb.append("style='text-align: center;border: 1px solid #e6e6e6;'")
-                
+
                 tb.append(f">{i}</td>")
 
             tb.append("</tr>")
