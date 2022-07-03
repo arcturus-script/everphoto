@@ -1,5 +1,4 @@
 import hashlib
-import time
 import requests as req
 from datetime import datetime
 
@@ -9,7 +8,7 @@ def handler(fn):
         res = fn(*args, **kwargs)
 
         if res["status"]:
-            a = [
+            return [
                 {
                     "h4": {
                         "content": f"账号: {res['account']}",
@@ -36,27 +35,22 @@ def handler(fn):
                         ]
                     },
                 },
+                {
+                    "txt": {
+                        "content": "任务情况",
+                    },
+                    "table": {
+                        "content": [
+                            ("任务", "执行结果"),
+                            ("收藏", f"{res['收藏']}"),
+                            ("隐藏", f"{res['隐藏']}"),
+                            ("相册", f"{res['相册']}"),
+                            ("备注", f"{res['备注']}"),
+                        ]
+                    },
+                },
             ]
 
-            if res.get("收藏") is not None:
-                a.append(
-                    {
-                        "txt": {
-                            "content": "任务情况",
-                        },
-                        "table": {
-                            "content": [
-                                ("任务", "执行结果"),
-                                ("收藏", f"{res['收藏']}"),
-                                ("隐藏", f"{res['隐藏']}"),
-                                ("相册", f"{res['相册']}"),
-                                ("备注", f"{res['备注']}"),
-                            ]
-                        },
-                    }
-                )
-
-            return a
         else:
             # 登录失败 or 签到失败
             return [
@@ -68,7 +62,6 @@ def handler(fn):
                         "content": res["message"],
                     },
                 },
-                {"txt": {"content": ""}},
             ]
 
     return inner
@@ -126,6 +119,9 @@ class Everphoto:
                 "mobile": f"{self.country_code}{self.__account}",
                 "password": self.get_pwd_md5(),
             }
+
+            print(f"++开始登录账号 {self.__account} ++")
+
             res = req.post(
                 Everphoto.LOGIN_URL,
                 data=data,
@@ -138,7 +134,9 @@ class Everphoto:
                 data = res.get("data")
 
                 self.headers.update(
-                    {"authorization": f"Bearer {data['token']}"},
+                    {
+                        "authorization": f"Bearer {data['token']}",
+                    },
                 )
 
                 profile = data["user_profile"]
@@ -178,6 +176,8 @@ class Everphoto:
 
             headers.update(self.headers)
 
+            print(f"++账号 {self.__account} 开始签到++")
+
             res = req.post(
                 Everphoto.CHECKIN_URL,
                 headers=headers,
@@ -186,7 +186,7 @@ class Everphoto:
             code = res.get("code")
 
             if code == 0:
-                print(f"🎉 账号 {self.__account} 签到成功")
+                print(f"账号 {self.__account} 签到成功")
 
                 data = res.get("data")
 
@@ -243,14 +243,27 @@ class Everphoto:
                 "备注": {"mission_id": "remark"},
             }
 
-            # 状态信息
+            # 状态信息, 将会运用到消息推送
             codeMap = {
                 0: "获取奖励成功",
                 20128: "任务状态不正确",
                 30005: "系统内部错误",
             }
 
-            print("+++++获取每日任务奖励+++++")
+            print("+++++++开始完成每日任务+++++++")
+            for key, task in tasks.items():
+                resp = req.post(
+                    Everphoto.TASKREPORT,
+                    headers=headers,
+                    json=task,
+                ).json()
+
+                if resp["code"] == 0:
+                    print(f"{key} ---> 任务完成")
+                else:
+                    print(f"{key} ---> 任务失败, 原因: {resp.get('message')}")
+
+            print("+++++++获取每日任务奖励+++++++")
             res = {}
             for key, task in tasks.items():
                 resp = req.post(
@@ -267,164 +280,19 @@ class Everphoto:
         except Exception as e:
             print(f"账号 {self.__account} 获取每日奖励时出现错误, 原因: {e}")
 
-    # 执行命令
-    def command(
-        self,
-        type: str,
-        cmd: str,
-        params: object,
-        task: object = None,
-    ) -> None:
-        try:
-            headers = {
-                "content-type": "application/json",
-                "host": "openapi.everphoto.cn",
-                "connection": "Keep-Alive",
-            }
-
-            headers.update(self.headers)
-
-            cmd = {
-                "commands": [
-                    {
-                        "command": cmd,  # 执行的命令
-                        "command_id": self.cmd,
-                        "created_at": int(round(time.time() * 1000)),
-                        "param": params,
-                    }
-                ],
-                "space_id": 0,
-            }
-
-            self.cmd += 1  # 任务 ID 自增
-
-            resp = req.post(
-                Everphoto.CMD,
-                headers=headers,
-                json=cmd,
-            ).json()
-
-            b = True
-            if task is not None:
-                resp2 = req.post(
-                    Everphoto.TASKREPORT,
-                    headers=headers,
-                    json=task,
-                ).json()
-
-                if resp2["code"] == 0:
-                    b = True
-                else:
-                    b = False
-
-            res = resp["data"]["results"][0]
-
-            if res["code"] == 0 and b:
-                print(f"{type}成功")
-            else:
-                raise Exception(res["msg"])
-        except Exception as e:
-            print(f"{type}时出错, 原因: {e}")
-
-    # 做任务
-    def task(
-        self,
-        *,
-        asset_id: int,
-        tag_id: int,
-        md5: str,
-        memo: str = "( •̀ ω •́ )✧",
-    ) -> None:
-        tasks = [
-            {
-                "type": "收藏相片",
-                "cmd": "asset_add_to_tag",
-                "task": {"mission_id": "star"},
-                "params": {
-                    "asset_ids": [asset_id],
-                    "tag_id": 70001,
-                    "tag_id_type": 2,
-                },
-            },
-            {
-                "type": "取消收藏相片",
-                "cmd": "asset_remove_from_tag",
-                "params": {
-                    "asset_ids": [asset_id],
-                    "tag_id": 70001,
-                    "tag_id_type": 2,
-                },
-            },
-            {
-                "type": "隐藏相片",
-                "task": {"mission_id": "hide"},
-                "cmd": "asset_add_to_tag",
-                "params": {
-                    "asset_ids": [asset_id],
-                    "tag_id": 70003,
-                    "tag_id_type": 2,
-                },
-            },
-            {
-                "type": "取消隐藏相片",
-                "cmd": "asset_remove_from_tag",
-                "params": {
-                    "asset_ids": [asset_id],
-                    "tag_id": 70003,
-                    "tag_id_type": 2,
-                },
-            },
-            {
-                "type": "相片添加到相册",
-                "task": {"mission_id": "add_to_album"},
-                "cmd": "asset_add_to_tag",
-                "params": {
-                    "asset_ids": [asset_id],
-                    "tag_id": tag_id,
-                    "tag_id_type": 2,
-                },
-            },
-            {
-                "type": "取消隐藏相片",
-                "cmd": "asset_remove_from_tag",
-                "params": {
-                    "asset_ids": [asset_id],
-                    "tag_id": tag_id,
-                    "tag_id_type": 2,
-                },
-            },
-            {
-                "type": "相片备注",
-                "task": {"mission_id": "remark"},
-                "cmd": "post_asset_supplement",
-                "params": {
-                    "md5": md5,
-                    "memo": memo,
-                },
-            },
-        ]
-
-        for task in tasks:
-            self.command(**task)
-
     @handler
-    def start(self, op):
+    def start(self):
         r = self.login()
+
         if r["status"]:
-            res = self.checkin()
+            res = self.checkin()  # 签到
+            res2 = self.reward()  # 每日任务
 
             result = {}
             result.update(self.userInfo)
 
             result.update(res)
-
-            if op is not None:
-                # 执行任务
-                self.task(**op)
-                res2 = self.reward()
-
-                if res2 is not None:
-                    result.update(res2)
+            result.update(res2)
 
             return result
         else:
