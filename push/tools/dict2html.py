@@ -482,7 +482,7 @@ class dict2html:
         if Style:
             tb.append(f"style='{Style}'")
         else:
-            tb.append("style='width: 100%;border-collapse: collapse;'")
+            tb.append("style='width: 100%;border-collapse: collapse;margin-bottom: 10px;'")
 
         tb.append("><tr>")
 
