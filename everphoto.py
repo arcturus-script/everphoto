@@ -1,4 +1,3 @@
-from ast import Num
 import hashlib
 import time
 import requests as req
@@ -57,8 +56,6 @@ def handler(fn):
                     }
                 )
 
-            a.append({"txt": {"content": ""}})
-
             return a
         else:
             # 登录失败 or 签到失败
@@ -94,8 +91,10 @@ class Everphoto:
     CHECKIN_URL = "https://openapi.everphoto.cn/sf/3/v4/PostCheckIn"
     # 每日奖励
     DAILY_REWARD = "https://openapi.everphoto.cn/sf/3/v4/MissionRewardClaim"
-    # 备注, 收藏
+    # 备注, 收藏等任务共同的 api
     CMD = "https://openapi.everphoto.cn/sf/3/v4/PostSyncCommand"
+    # 任务状态回调
+    TASKREPORT = "https://openapi.everphoto.cn/sf/3/v4/MissionReport"
 
     def __init__(
         self,
@@ -274,6 +273,7 @@ class Everphoto:
         type: str,
         cmd: str,
         params: object,
+        task: object = None,
     ) -> None:
         try:
             headers = {
@@ -304,9 +304,22 @@ class Everphoto:
                 json=cmd,
             ).json()
 
+            b = True
+            if task is not None:
+                resp2 = req.post(
+                    Everphoto.TASKREPORT,
+                    headers=headers,
+                    json=task,
+                ).json()
+
+                if resp2["code"] == 0:
+                    b = True
+                else:
+                    b = False
+
             res = resp["data"]["results"][0]
 
-            if res["code"] == 0:
+            if res["code"] == 0 and b:
                 print(f"{type}成功")
             else:
                 raise Exception(res["msg"])
@@ -317,8 +330,8 @@ class Everphoto:
     def task(
         self,
         *,
-        asset_id: Num,
-        tag_id: Num,
+        asset_id: int,
+        tag_id: int,
         md5: str,
         memo: str = "( •̀ ω •́ )✧",
     ) -> None:
@@ -326,6 +339,7 @@ class Everphoto:
             {
                 "type": "收藏相片",
                 "cmd": "asset_add_to_tag",
+                "task": {"mission_id": "star"},
                 "params": {
                     "asset_ids": [asset_id],
                     "tag_id": 70001,
@@ -343,6 +357,7 @@ class Everphoto:
             },
             {
                 "type": "隐藏相片",
+                "task": {"mission_id": "hide"},
                 "cmd": "asset_add_to_tag",
                 "params": {
                     "asset_ids": [asset_id],
@@ -361,6 +376,7 @@ class Everphoto:
             },
             {
                 "type": "相片添加到相册",
+                "task": {"mission_id": "add_to_album"},
                 "cmd": "asset_add_to_tag",
                 "params": {
                     "asset_ids": [asset_id],
@@ -379,6 +395,7 @@ class Everphoto:
             },
             {
                 "type": "相片备注",
+                "task": {"mission_id": "remark"},
                 "cmd": "post_asset_supplement",
                 "params": {
                     "md5": md5,
