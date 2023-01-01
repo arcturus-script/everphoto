@@ -14,4 +14,10 @@ config = {
     ],
     "together": True,  # 是否合并发送结果, 不写或 True 时合并发送
     "push": "pushplus",  # 推送类型, together 为 True 或者不写时必须有, 否则不推送
+    "key": "xxxx",  # 推送服务的 key
+    # "key": {
+    #   "agentid": "xxx",
+    #   "corpSecret": "xxx",
+    #   "corpid": "xxx"
+    # } # 这个专门用于企业微信, 要用则取消注释, 顺便把上面那个注释掉
 }

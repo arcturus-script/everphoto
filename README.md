@@ -6,7 +6,3 @@
 </div>
 
 直接配置 config.py 即可, 记得执行入口改为 index.main
-
-需要推送的话还得配置环境变量
-
-如 pushplus 的环境变量的 key 就为 pushplus
