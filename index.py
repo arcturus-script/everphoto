@@ -21,9 +21,9 @@ def main(*arg):
 
         if type:
             push(key, type, "时光相册", msg_list)
-        else:  # 不开启服务
+        else:
             print("未开启推送")
-    else:  # 单独推送
+    else:
         for i in multi:
             country = i.get("country", "+86")
             b = Everphoto(i["account"], i["password"], country)
