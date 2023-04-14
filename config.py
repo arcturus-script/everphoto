@@ -1,24 +1,38 @@
 config = {
     "multi": [
         {
-            "account": "",
-            "country": "+86",  # 区号
-            "password": "",
-            "push": "pushplus",  # together 为 True 时失效, 不写不推送
+            "account": "xxx",  # 账号
+            "country": "+86",  # 区号, 默认 +86
+            "password": "xxx",  # 密码, 非 MD5 加密
+            "tasks": True,  # 是否需要完成每日任务, 默认 False
+            # "push": {
+            #     "type": "pushplus",
+            #     "key": "xxx",
+            # },
         },
-        # {
-        #     "account": "123",
-        #     "password": "123",
-        #     "push": "pushplus",
-        # },
+        {
+            "account": "xxx",
+            "password": "xxx",
+            # "push": [
+            #     # 以数组的形式填写, 则会向多个服务推送消息
+            #     {
+            #         "type": "pushplus",
+            #         "key": "xxx",
+            #     },
+            #     {
+            #         "type": "workWechat",
+            #         "key": {
+            #             "agentid": 1000002,
+            #             "corpSecret": "xxx",
+            #             "corpid": "xxx",
+            #         },
+            #     },
+            # ],
+        },
     ],
-    "together": True,  # 是否合并发送结果, 不写或 True 时合并发送
-    "push": "pushplus",  # 推送类型, together 为 True 或者不写时必须有, 否则不推送
-    "key": "xxxx",  # 推送服务的 key
-    # 这个专门用于企业微信, 要用则取消注释, 顺便把上面那个注释掉
-    # "key": {
-    #   "agentid": "xxx",
-    #   "corpSecret": "xxx",
-    #   "corpid": "xxx"
-    # }
+    "push": {
+        # 合并发送消息, 只合并未单独配置 push 的账号
+        "type": "pushplus",
+        "key": "xxx",
+    },
 }
