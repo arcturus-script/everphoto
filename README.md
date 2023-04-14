@@ -5,6 +5,7 @@
 ```python
 # config.py
 
+# 重复的推送服务可以写成一个
 push = {
   "type": "pushplus",
   "key": "069ac93da07...",
