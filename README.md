@@ -1,5 +1,11 @@
 ## 时光相册签到(云函数版)
 
+注意需要把子模块一起下载了, 直接下载时 push 文件夹是空的
+
+```bash
+git clone --recursive https://github.com/arcturus-script/everphoto.git
+```
+
 配置 config.py , 执行入口改为 index.main
 
 ```python
